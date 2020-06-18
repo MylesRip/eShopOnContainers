@@ -30,6 +30,20 @@ namespace Microsoft.eShopOnContainers.Services.Identity.API
                 var host = BuildWebHost(configuration, args);
 
                 Log.Information("Applying migrations ({ApplicationContext})...", AppName);
+
+                // NOTES:   The database connection gets picked up from Identity.API.appsettings.json. 
+                //          The seed data comes from either docker-compose.override.yml or docker-compose.prod.yml. 
+                //          The environmental variables referenced in the compose files are defined in the solution-level .env file. 
+                //          If the environmental variables are changed, it may be necessary to drop the IdentityDb database and 
+                //          recreate and reseed it with the new values. Alternatively, the database tables can be updated directly. 
+                //          It is the ClientRedirectUris table and the ClientPostLogoutRedirectUris table that are affected. 
+                //          For development, it may be necessary to update these tables directly to get the application running. 
+                //          In Docker for Windows, for example, the database tables for development will need to have "host.docker.internal" 
+                //          replaced with "localhost" in the above mentioned tables. 
+                //          The database is only available to SSMS when this project's containers are running. (Fortunately, changes 
+                //          to the database are retained after restarting the containers.) 
+                //          
+
                 host.MigrateDbContext<PersistedGrantDbContext>((_, __) => { })
                     .MigrateDbContext<ApplicationDbContext>((context, services) =>
                     {
