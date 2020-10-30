@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+//using Microsoft.Build.Utilities;
 using Microsoft.eShopOnContainers.WebMVC.Services;
 using Microsoft.eShopOnContainers.WebMVC.ViewModels;
 using Microsoft.Extensions.Configuration;
@@ -18,6 +19,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Logging;
 using StackExchange.Redis;
 using System;
+using System.Threading.Tasks;
 using System.IdentityModel.Tokens.Jwt;
 using System.Net.Http;
 using WebMVC.Infrastructure;
@@ -193,6 +195,9 @@ namespace Microsoft.eShopOnContainers.WebMVC
             var callBackUrl = configuration.GetValue<string>("CallBackUrl");
             var sessionCookieLifetime = configuration.GetValue("SessionCookieLifetimeMinutes", 60);
 
+            //identityUrl = "http://localhost:5105/";
+            identityUrl = "http://identity-api:80/";
+
             // Add Authentication services          
 
             services.AddAuthentication(options =>
@@ -220,6 +225,13 @@ namespace Microsoft.eShopOnContainers.WebMVC
                 options.Scope.Add("locations");
                 options.Scope.Add("webshoppingagg");
                 options.Scope.Add("orders.signalrhub");
+
+                options.Events.OnRedirectToIdentityProvider = async n =>
+                {
+                    n.ProtocolMessage.RedirectUri = "http://host.docker.internal:5100/signin-oidc";
+                    //n.ProtocolMessage.RedirectUri = "http://localhost:5100/signin-oidc";
+                    await Task.FromResult(0);
+                };
             });
 
             return services;
